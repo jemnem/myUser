@@ -1,3 +1,15 @@
+
+properties([
+	buildDiscarder(
+		logRotator(
+			artifactDaysToKeepStr: '', 
+			artifactNumToKeepStr: '', 
+			daysToKeepStr: '7', 
+			numToKeepStr: '7'
+		)
+	)
+])
+
 node ('api-test') {
     stage('Get the code from githut') {
        git credentialsId: 'b6b44b1f-71e5-49b9-89b6-fb29ae993b4e', url: 'https://github.com/jemnem/myUser.git'
