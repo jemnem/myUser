@@ -16,12 +16,12 @@ node ('api-test') {
     }
     stage('Deploy') {
         echo 'start deploying...'
-        sh 'docker-compose stop'
-        sh 'docker-compose rm -f'
+        sh 'docker-compose --no-ansi stop'
+        sh 'docker-compose --no-ansi rm -f'
         // sh 'docker run -v ${PWD}/test:/usr/src/test  -w /usr/src/test/scripts python python util.py set_sql'
         // sh 'cp ${PWD}/test/scripts/data/dump1.sql ${PWD}/docker/catalogue-db/data/'
-        sh 'docker-compose build'
-        sh 'docker-compose up -d'
+        sh 'docker-compose --no-ansi build'
+        sh 'docker-compose --no-ansi up -d'
         // sleep 120
     }
     stage('Test') {
