@@ -118,43 +118,6 @@
 			"response": []
 		},
 		{
-			"name": "get_login",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "99cce73d-5e22-4efd-89f9-f38019df9db4",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://{{host}}:{{port}}/login",
-					"protocol": "http",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "post_register_new_user",
 			"event": [
 				{
@@ -165,12 +128,9 @@
 							"",
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
-							"    pm.environment.set(\"customer_id\", pm.response.json().id);",
+							"    pm.environment.set(\"new_customer_id\", pm.response.json().id);",
 							"});",
-							"",
-							"pm.environment.unset(\"new_user_name\");",
-							"pm.environment.unset(\"new_user_password\");",
-							"pm.environment.unset(\"new_user_email\");"
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -184,9 +144,9 @@
 							"new_user_password = \"test_ocean\";",
 							"new_user_email = \"ocean.yin@quest.com\";",
 							"",
-							"pm.environment.set(\"new_user_name\", new_user_name);",
-							"pm.environment.set(\"new_user_password\", new_user_password);",
-							"pm.environment.set(\"new_user_email\", new_user_email);",
+							"pm.variables.set(\"new_user_name\", new_user_name);",
+							"pm.variables.set(\"new_user_password\", new_user_password);",
+							"pm.variables.set(\"new_user_email\", new_user_email);",
 							"",
 							"host = pm.environment.get(\"host\");",
 							"port = pm.environment.get(\"port\");",
@@ -251,38 +211,66 @@
 			"response": []
 		},
 		{
-			"name": "delete_customer_by_id",
+			"name": "get_login",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "afa9f602-ef49-4f2d-80f2-8a5a3f647704",
+						"id": "99cce73d-5e22-4efd-89f9-f38019df9db4",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    ",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.user.username).to.eql(pm.variables.get(\"new_user_name\"));",
+							"    pm.expect(jsonData.user.id).to.eql(pm.variables.get(\"new_customer_id\"));",
 							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "b05a2823-bf04-4fcd-94d5-0b6b0607f380",
+						"exec": [
+							""
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"method": "DELETE",
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{new_user_password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{new_user_name}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
 				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}",
+					"raw": "http://{{host}}:{{port}}/login",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
 					],
 					"port": "{{port}}",
 					"path": [
-						"customers",
-						"{{customer_id}}"
+						"login"
 					]
 				}
 			},
@@ -298,7 +286,21 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    ",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.username).to.eql(pm.variables.get(\"new_user_name\"));",
+							"    pm.expect(jsonData.id).to.eql(pm.variables.get(\"new_customer_id\"));",
 							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "d635971d-7583-470d-856c-a649497fd632",
+						"exec": [
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -312,7 +314,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}",
+					"raw": "http://{{host}}:{{port}}/customers/{{new_customer_id}}",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
@@ -320,7 +322,97 @@
 					"port": "{{port}}",
 					"path": [
 						"customers",
-						"{{customer_id}}"
+						"{{new_customer_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_new_card",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2d7829c1-1aaf-49d2-af16-ac1d345fbbbf",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.environment.set(\"new_card_id\", pm.response.json().id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0c3f4f7c-03dc-473e-9bf6-819cc9a8df8e",
+						"exec": [
+							"",
+							"new_card_longNum = \"5423543229804\";",
+							"new_card_expires = \"12/19\";",
+							"new_card_ccv = \"789\";",
+							"",
+							"pm.variables.set(\"new_card_longNum\", new_card_longNum);",
+							"pm.variables.set(\"new_card_expires\", new_card_expires);",
+							"pm.variables.set(\"new_card_ccv\", new_card_ccv);",
+							"",
+							"host = pm.environment.get(\"host\");",
+							"port = pm.environment.get(\"port\");",
+							"get_cards_url = \"http://\" + host + \":\" + port + \"/cards\";",
+							"",
+							"// Delete existing cards for test user",
+							"pm.sendRequest(get_cards_url, function (err, response) {",
+							"    var cardData=response.json()._embedded.card;",
+							"    for (var i = 0; i < cardData.length; i ++){",
+							"        if (cardData[i].longNum == new_card_longNum && ",
+							"            cardData[i].expires == new_card_expires && ",
+							"            cardData[i].ccv == new_card_ccv){",
+							"            card_id = cardData[i].id;",
+							"            if (card_id.length > 0){",
+							"                // Delete card by id",
+							"                delete_card_url = \"http://\" + host + \":\" + port + \"/cards/\" + card_id;",
+							"                const deleteRequest = {",
+							"                  url: delete_card_url,",
+							"                  method: 'DELETE'",
+							"                };",
+							"                ",
+							"                pm.sendRequest(deleteRequest, function (err, response) {",
+							"                    console.log(err ? err : response.json());",
+							"                });",
+							"            }",
+							"        }",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"longNum\": \"{{new_card_longNum}}\",\n\t\"expires\": \"{{new_card_expires}}\",\n\t\"ccv\": \"{{new_card_ccv}}\",\n\t\"userID\": \"{{new_customer_id}}\"\n}"
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards"
 					]
 				}
 			},
@@ -336,6 +428,14 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    ",
+							"    var cardData=pm.response.json()._embedded.card;",
+							"    pm.expect(cardData.length).to.eql(1);",
+							"    for (var i = 0; i < cardData.length; i ++){",
+							"        pm.expect(cardData[i].longNum).to.eql(pm.variables.get(\"new_card_longNum\"));",
+							"        pm.expect(cardData[i].expires).to.eql(pm.variables.get(\"new_card_expires\"));",
+							"        pm.expect(cardData[i].ccv).to.eql(pm.variables.get(\"new_card_ccv\"));",
+							"    }",
 							"});"
 						],
 						"type": "text/javascript"
@@ -350,7 +450,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}/cards",
+					"raw": "http://{{host}}:{{port}}/customers/{{new_customer_id}}/cards",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
@@ -358,47 +458,8 @@
 					"port": "{{port}}",
 					"path": [
 						"customers",
-						"{{customer_id}}",
+						"{{new_customer_id}}",
 						"cards"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "get_customer_address",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "9840a8b3-0639-4dbf-b7f2-245f60a92f25",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}/addresses",
-					"protocol": "http",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"customers",
-						"{{customer_id}}",
-						"addresses"
 					]
 				}
 			},
@@ -442,16 +503,112 @@
 			"response": []
 		},
 		{
-			"name": "post_new_card",
+			"name": "get_card_by_id",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "2d7829c1-1aaf-49d2-af16-ac1d345fbbbf",
+						"id": "c409e23f-a2b0-43f7-bb94-f774b192072a",
 						"exec": [
-							"pm.test(\"Successful POST request\", function () {",
-							"    pm.expect(pm.response.code).to.be.oneOf([201,202]);",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"    var cardData=pm.response.json();",
+							"    pm.expect(cardData.longNum).to.eql(pm.variables.get(\"new_card_longNum\"));",
+							"    pm.expect(cardData.expires).to.eql(pm.variables.get(\"new_card_expires\"));",
+							"    pm.expect(cardData.ccv).to.eql(pm.variables.get(\"new_card_ccv\"));",
 							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards/{{new_card_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards",
+						"{{new_card_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_new_address",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "735ead49-642b-4fac-b60c-125cbcfe9d34",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.environment.set(\"new_address_id\", pm.response.json().id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "156c430d-199f-40ea-ab6c-f142e74b9fc7",
+						"exec": [
+							"",
+							"new_address_street = \"Vastest Street\";",
+							"new_address_number = \"6503\";",
+							"new_address_country = \"US\";",
+							"new_address_city = \"SAINT PAUL\";",
+							"new_address_postcode = \"15035\";",
+							"",
+							"pm.variables.set(\"new_address_street\", new_address_street);",
+							"pm.variables.set(\"new_address_number\", new_address_number);",
+							"pm.variables.set(\"new_address_country\", new_address_country);",
+							"pm.variables.set(\"new_address_city\", new_address_city);",
+							"pm.variables.set(\"new_address_postcode\", new_address_postcode);",
+							"",
+							"host = pm.environment.get(\"host\");",
+							"port = pm.environment.get(\"port\");",
+							"get_addresses_url = \"http://\" + host + \":\" + port + \"/addresses\";",
+							"",
+							"// Delete existing cards for test user",
+							"pm.sendRequest(get_addresses_url, function (err, response) {",
+							"    var addressData=response.json()._embedded.address;",
+							"    for (var i = 0; i < addressData.length; i ++){",
+							"        if (addressData[i].street == new_address_street && ",
+							"            addressData[i].number == new_address_number && ",
+							"            addressData[i].country == new_address_country &&",
+							"            addressData[i].city == new_address_city &&",
+							"            addressData[i].postcode == new_address_postcode){",
+							"            address_id = addressData[i].id;",
+							"            if (address_id.length > 0){",
+							"                // Delete card by id",
+							"                delete_address_url = \"http://\" + host + \":\" + port + \"/addresses/\" + address_id;",
+							"                const deleteRequest = {",
+							"                  url: delete_address_url,",
+							"                  method: 'DELETE'",
+							"                };",
+							"                ",
+							"                pm.sendRequest(deleteRequest, function (err, response) {",
+							"                    console.log(err ? err : response.json());",
+							"                });",
+							"            }",
+							"        }",
+							"    }",
+							"});",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -469,70 +626,43 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"longNum\": \"string\",\n\t\"expires\": \"string\",\n\t\"ccv\": \"string\",\n\t\"userID\": \"string\"\n}"
+					"raw": "{\n\t\"street\": \"{{new_address_street}}\",\n\t\"number\": \"{{new_address_number}}\",\n\t\"country\": \"{{new_address_country}}\",\n\t\"city\": \"{{new_address_city}}\",\n\t\"postcode\": \"{{new_address_postcode}}\",\n\t\"userID\": \"{{new_customer_id}}\"\n}"
 				},
 				"url": {
-					"raw": "http://{{host}}:{{port}}/cards",
+					"raw": "http://{{host}}:{{port}}/addresses",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
 					],
 					"port": "{{port}}",
 					"path": [
-						"cards"
+						"addresses"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "delete_card_by_id",
+			"name": "get_customer_address",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "9b45a705-cfb8-42cc-980f-c0366ce310a3",
+						"id": "9840a8b3-0639-4dbf-b7f2-245f60a92f25",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://{{host}}:{{port}}/cards/{{card_id}}",
-					"protocol": "http",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"cards",
-						"{{card_id}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "get_card_by_id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "c409e23f-a2b0-43f7-bb94-f774b192072a",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
+							"    ",
+							"    var addressData=pm.response.json()._embedded.address;",
+							"    pm.expect(addressData.length).to.eql(1);",
+							"    for (var i = 0; i < addressData.length; i ++){",
+							"        pm.expect(addressData[i].street).to.eql(pm.variables.get(\"new_address_street\"));",
+							"        pm.expect(addressData[i].number).to.eql(pm.variables.get(\"new_address_number\"));",
+							"        pm.expect(addressData[i].country).to.eql(pm.variables.get(\"new_address_country\"));",
+							"        pm.expect(addressData[i].city).to.eql(pm.variables.get(\"new_address_city\"));",
+							"        pm.expect(addressData[i].postcode).to.eql(pm.variables.get(\"new_address_postcode\"));",
+							"        pm.expect(addressData[i].id).to.eql(pm.variables.get(\"new_address_id\"));",
+							"    }",
 							"});"
 						],
 						"type": "text/javascript"
@@ -547,15 +677,16 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{host}}:{{port}}/cards/{{card_id}}",
+					"raw": "http://{{host}}:{{port}}/customers/{{new_customer_id}}/addresses",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
 					],
 					"port": "{{port}}",
 					"path": [
-						"cards",
-						"{{card_id}}"
+						"customers",
+						"{{new_customer_id}}",
+						"addresses"
 					]
 				}
 			},
@@ -599,88 +730,6 @@
 			"response": []
 		},
 		{
-			"name": "post_new_address",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "735ead49-642b-4fac-b60c-125cbcfe9d34",
-						"exec": [
-							"pm.test(\"Successful POST request\", function () {",
-							"    pm.expect(pm.response.code).to.be.oneOf([201,202]);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"street\": \"string\",\n\t\"number\": \"string\",\n\t\"country\": \"string\",\n\t\"city\": \"string\",\n\t\"postcode\": \"string\",\n\t\"userID\": \"string\"\n}"
-				},
-				"url": {
-					"raw": "http://{{host}}:{{port}}/addresses",
-					"protocol": "http",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"addresses"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "delete_address_by_id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "0ff6ffab-4ac3-475e-bd17-75ce17512c64",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "http://{{host}}:{{port}}/addresses/{{address_id}}",
-					"protocol": "http",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"addresses",
-						"{{address_id}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "get_address_by_id",
 			"event": [
 				{
@@ -704,7 +753,7 @@
 					"raw": ""
 				},
 				"url": {
-					"raw": "http://{{host}}:{{port}}/addresses/{{address_id}}",
+					"raw": "http://{{host}}:{{port}}/addresses/{{new_address_id}}",
 					"protocol": "http",
 					"host": [
 						"{{host}}"
@@ -712,7 +761,127 @@
 					"port": "{{port}}",
 					"path": [
 						"addresses",
-						"{{address_id}}"
+						"{{new_address_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_card_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9b45a705-cfb8-42cc-980f-c0366ce310a3",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"    pm.environment.unset(\"new_card_id\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards/{{new_card_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards",
+						"{{new_card_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_address_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0ff6ffab-4ac3-475e-bd17-75ce17512c64",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"    pm.environment.unset(\"new_address_id\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/addresses/{{new_address_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"addresses",
+						"{{new_address_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_customer_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "afa9f602-ef49-4f2d-80f2-8a5a3f647704",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"    pm.environment.unset(\"new_customer_id\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/customers/{{new_customer_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"customers",
+						"{{new_customer_id}}"
 					]
 				}
 			},
