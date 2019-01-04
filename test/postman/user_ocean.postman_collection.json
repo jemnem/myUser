@@ -1,0 +1,722 @@
+{
+	"info": {
+		"_postman_id": "07b36003-c83f-4b23-a43c-a65a752ecee9",
+		"name": "api-user",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "check_health",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c20dc73a-432c-489d-b4e1-8b88d8420cd4",
+						"exec": [
+							"",
+							"expect_services = pm.environment.get(\"expect_services\");",
+							"",
+							"pm.test(\"check services health\",function(){",
+							"    pm.response.to.have.status(200);",
+							"    pm.response.to.be.json;",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"    ",
+							"    var jsonData=pm.response.json();",
+							"    pm.expect(jsonData.health.length).to.eql(expect_services.length);",
+							"    for (var i = 0; i < jsonData.health.length; i ++){",
+							"        pm.expect(jsonData.health[i].service).to.eql(expect_services[i].name);",
+							"        pm.expect(jsonData.health[i].status).to.eql(expect_services[i].status);",
+							"    }",
+							"});",
+							"",
+							"pm.environment.unset(\"expect_services\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "21ee0ada-1493-444a-8743-2b24e8bfc22b",
+						"exec": [
+							"var expect_services = [",
+							"    {",
+							"        \"name\": \"user\",",
+							"        \"status\": \"OK\"",
+							"    },",
+							"    {",
+							"        \"name\": \"user-db\",",
+							"        \"status\": \"OK\"",
+							"    }",
+							"];",
+							"",
+							"pm.environment.set(\"expect_services\", expect_services);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/health",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_customers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "eee8b683-aca3-4959-82bb-5d7bd43eba71",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/customers",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "99cce73d-5e22-4efd-89f9-f38019df9db4",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/login",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_register_new_user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ddccc5af-bb43-47fa-8162-2ffd4b146172",
+						"exec": [
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.environment.set(\"customer_id\", pm.response.json().id);",
+							"});",
+							"",
+							"pm.environment.unset(\"new_user_name\");",
+							"pm.environment.unset(\"new_user_password\");",
+							"pm.environment.unset(\"new_user_email\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e5137a57-3868-4ce3-920e-8e7165180dac",
+						"exec": [
+							"new_user_name = \"test_ocean\";",
+							"new_user_password = \"test_ocean\";",
+							"new_user_email = \"ocean.yin@quest.com\";",
+							"",
+							"pm.environment.set(\"new_user_name\", new_user_name);",
+							"pm.environment.set(\"new_user_password\", new_user_password);",
+							"pm.environment.set(\"new_user_email\", new_user_email);",
+							"",
+							"host = pm.environment.get(\"host\");",
+							"port = pm.environment.get(\"port\");",
+							"get_customers_url = \"http://\" + host + \":\" + port + \"/customers\";",
+							"",
+							"",
+							"pm.sendRequest(get_customers_url, function (err, response) {",
+							"    var customerData=response.json()._embedded.customer;",
+							"    for (var i = 0; i < customerData.length; i ++){",
+							"        if (customerData[i].username == new_user_name){",
+							"            user_id = customerData[i].id;",
+							"            break;",
+							"        }",
+							"    }",
+							"    ",
+							"    if (user_id.length > 0){",
+							"        // Delete customer by id",
+							"        delete_user_url = \"http://\" + host + \":\" + port + \"/customers/\" + user_id;",
+							"        const deleteRequest = {",
+							"          url: delete_user_url,",
+							"          method: 'DELETE'",
+							"        };",
+							"        ",
+							"        pm.sendRequest(deleteRequest, function (err, response) {",
+							"            console.log(err ? err : response.json());",
+							"        });",
+							"    }",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"{{new_user_name}}\",\n\t\"password\": \"{{new_user_password}}\",\n\t\"email\": \"{{new_user_email}}\"\n}"
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/register",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_customer_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "afa9f602-ef49-4f2d-80f2-8a5a3f647704",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"customers",
+						"{{customer_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_customer_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6af8b2fe-eed2-4c1a-b8f5-0b5999c42ca6",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"customers",
+						"{{customer_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_customer_cards",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "53c334ad-ea8b-4ad5-bd8c-fa9f04f2876c",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}/cards",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"customers",
+						"{{customer_id}}",
+						"cards"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_customer_address",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9840a8b3-0639-4dbf-b7f2-245f60a92f25",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/customers/{{customer_id}}/addresses",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"customers",
+						"{{customer_id}}",
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_cards",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e318c289-4343-4644-baef-eaae1823278a",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_new_card",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2d7829c1-1aaf-49d2-af16-ac1d345fbbbf",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([201,202]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"longNum\": \"string\",\n\t\"expires\": \"string\",\n\t\"ccv\": \"string\",\n\t\"userID\": \"string\"\n}"
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_card_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9b45a705-cfb8-42cc-980f-c0366ce310a3",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards/{{card_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards",
+						"{{card_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_card_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c409e23f-a2b0-43f7-bb94-f774b192072a",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/cards/{{card_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"cards",
+						"{{card_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_addresses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8abc930a-f027-42f5-af55-32170e14b4bc",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/addresses",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post_new_address",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "735ead49-642b-4fac-b60c-125cbcfe9d34",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([201,202]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"street\": \"string\",\n\t\"number\": \"string\",\n\t\"country\": \"string\",\n\t\"city\": \"string\",\n\t\"postcode\": \"string\",\n\t\"userID\": \"string\"\n}"
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/addresses",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete_address_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0ff6ffab-4ac3-475e-bd17-75ce17512c64",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/addresses/{{address_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"addresses",
+						"{{address_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get_address_by_id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c246310f-de21-40b0-ac05-13d1a2174be7",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{host}}:{{port}}/addresses/{{address_id}}",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"addresses",
+						"{{address_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
